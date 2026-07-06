@@ -2,8 +2,10 @@ services:
   postgres:
     image: postgres:15.3
     container_name: rag_sys_postgres
-    env_file:
-      - .env
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: fastapi_rag
     ports:
       - "5432:5432"
     volumes:
