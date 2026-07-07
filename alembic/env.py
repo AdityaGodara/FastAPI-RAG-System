@@ -18,9 +18,9 @@ config.set_main_option(
     settings.database_url.replace("postgresql+asyncpg", "postgresql+psycopg")
 )
 
-print("="*80)
-print(f"Using database URL: {config.get_main_option('sqlalchemy.url')}")
-print("="*80)
+# print("="*80)
+# print(f"Using database URL: {config.get_main_option('sqlalchemy.url')}")
+# print("="*80)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
