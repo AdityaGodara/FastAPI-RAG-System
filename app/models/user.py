@@ -2,7 +2,7 @@ import uuid
 
 from app.db.base_class import Base
 
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import UUID, DateTime, String, func, Boolean
 
 class User(Base):
@@ -27,3 +27,8 @@ class User(Base):
     updated_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), 
                                                  server_default=func.now(), 
                                                  nullable=False)
+    
+    refresh_tokens: Mapped[list["RefreshToken"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
