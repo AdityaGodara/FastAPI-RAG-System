@@ -1,4 +1,5 @@
 from pwdlib import PasswordHash
+import hashlib
 
 password_hash = PasswordHash.recommended()
 
@@ -11,4 +12,4 @@ def verify_password(password: str, hashed_password: str) -> bool:
     return password_hash.verify(password, hashed_password)
 
 def hash_ref_token(token: str) -> str:
-    return password_hash.hash(token)
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
