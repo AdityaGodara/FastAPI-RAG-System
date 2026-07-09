@@ -18,14 +18,19 @@ services:
     ports:
       - "6379:6379"
 
-  # minio:
-  #   image: bitnamicharts/minio:17.0.21
-  #   container_name: minio
-  #   env_file:
-  #     - .env
-  #   ports:
-  #     - "9000:9000"
-  #   command: server /data
+  minio:
+    image: minio/minio
+    container_name: rag_sys_minio
+    env_file:
+      - .env
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
 
 volumes:
   postgres_data:
+  minio_data:

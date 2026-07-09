@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from app.auth.router import router as auth_router
+from contextlib import asynccontextmanager
+
+from app.storage.service import StorageService
 
 app = FastAPI(
     title="FastAPI RAG",
@@ -7,4 +10,12 @@ app = FastAPI(
     version="1.0.0",
 )
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    storage = StorageService()
+    storage.ensure_bucket_exists()
+
+    yield
+
 app.include_router(auth_router)
+
