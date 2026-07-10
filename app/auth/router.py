@@ -10,6 +10,22 @@ router = APIRouter(
     tags=["Authentication"],
 )
 
+from fastapi.security import OAuth2PasswordRequestForm
+
+@router.post("/token", response_model=TokenResponse)
+async def token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: AsyncSession = Depends(get_db),
+):
+    service = AuthService(db)
+
+    return await service.login(
+        LoginRequest(
+            email=form_data.username,
+            password=form_data.password,
+        )
+    )
+
 @router.post(
     "/signup",
     response_model=UserResponse,

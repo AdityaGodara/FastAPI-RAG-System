@@ -1,19 +1,14 @@
 import uuid
 from pathlib import Path
 from uuid import UUID
-from enum import Enum
+
+from app.models.enums import MediaType
 
 from fastapi import UploadFile
 from minio.error import S3Error
 
 from app.core.config import settings
 from app.storage.client import minio_client
-
-class MediaType(str, Enum):
-    PDF = "pdf"
-    IMAGE = "image"
-    AUDIO = "audio"
-    VIDEO = "video"
 
 class StorageService:
     def __init__(self):
@@ -75,9 +70,9 @@ class StorageService:
                 bucket_name=settings.minio_bucket,
                 object_name=object_name,
             )
-
         except S3Error as e:
-            raise RuntimeError(f"Failed to delete file: {e}")
+            if e.code != "NoSuchKey":
+                raise RuntimeError(f"Failed to delete file: {e}")
 
     def generate_presigned_url(
         self,

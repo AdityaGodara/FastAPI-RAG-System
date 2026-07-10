@@ -1,5 +1,8 @@
 from fastapi import FastAPI
+
 from app.auth.router import router as auth_router
+from app.documents.router import router as document_router
+
 from contextlib import asynccontextmanager
 
 from app.storage.service import StorageService
@@ -18,4 +21,5 @@ async def lifespan(app: FastAPI):
     yield
 
 app.include_router(auth_router)
+app.include_router(document_router)
 
