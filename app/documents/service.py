@@ -4,9 +4,11 @@ from fastapi import HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.documents.repository import DocumentRepository
+from app.jobs.repository import IngestionJobRepository
 from app.documents.schemas import DocumentResponse
 from app.models.document import Document
-from app.models.enums import DocumentStatus, MediaType
+from app.models.injestion_job import IngestionJob
+from app.models.enums import DocumentStatus, MediaType, JobStatus
 from app.storage.service import StorageService
 
 
@@ -14,6 +16,7 @@ class DocumentService:
     def __init__(self, db: AsyncSession):
         self.repository = DocumentRepository(db)
         self.storage = StorageService()
+        self.job_repo = IngestionJobRepository(db)
 
     def _get_media_type(self, file: UploadFile) -> MediaType:
         content_type = file.content_type
@@ -62,7 +65,24 @@ class DocumentService:
 
             document = await self.repository.create(document)
 
-            return DocumentResponse.model_validate(document)
+            job = IngestionJob(
+                document_id=document.id,
+                status=JobStatus.PENDING
+            )
+
+            job = await self.job_repo.create(job)
+
+            await self.db.commit()
+
+            return DocumentResponse(
+                id=document.id,
+                job_id=job.id,
+                original_filename=document.original_filename,
+                media_type=document.media_type,
+                status=document.status,
+                job_status=job.status,
+                created_at=document.created_at,
+            )
 
         except Exception:
             self.storage.delete_file(object_key)

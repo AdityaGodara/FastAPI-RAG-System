@@ -12,8 +12,6 @@ class DocumentRepository:
 
     async def create(self, document: Document) -> Document:
         self.db.add(document)
-        await self.db.commit()
-        await self.db.refresh(document)
         return document
     
     async def get_by_id(self, doc_id: UUID) -> Document:

@@ -77,3 +77,9 @@ class Document(Base):
     user: Mapped["User"] = relationship(
         back_populates="documents",
     )
+
+    ingestion_job: Mapped["IngestionJob"] = relationship(
+        back_populates="document",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )

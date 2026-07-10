@@ -13,3 +13,9 @@ class DocumentStatus(str, Enum):
     PROCESSING = "processing"
     INDEXED = "indexed"
     FAILED = "failed"
+
+class JobStatus(str, Enum):
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"
