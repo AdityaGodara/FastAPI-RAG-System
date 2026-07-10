@@ -13,7 +13,7 @@ class IngestionJobRepository:
 
     async def create(self, job: IngestionJob) -> IngestionJob:
         self.db.add(job)
-        await self.db.commit()
+        await self.db.flush()
         await self.db.refresh(job)
         return job
 

@@ -11,12 +11,14 @@ from app.models.injestion_job import IngestionJob
 from app.models.enums import DocumentStatus, MediaType, JobStatus
 from app.storage.service import StorageService
 
+from app.tasks.ingestion import process_document
 
 class DocumentService:
     def __init__(self, db: AsyncSession):
         self.repository = DocumentRepository(db)
         self.storage = StorageService()
         self.job_repo = IngestionJobRepository(db)
+        self.db = db
 
     def _get_media_type(self, file: UploadFile) -> MediaType:
         content_type = file.content_type
@@ -71,6 +73,8 @@ class DocumentService:
             )
 
             job = await self.job_repo.create(job)
+
+            process_document.delay(str(job.id))
 
             await self.db.commit()
 

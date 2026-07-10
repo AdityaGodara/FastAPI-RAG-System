@@ -12,6 +12,8 @@ class DocumentRepository:
 
     async def create(self, document: Document) -> Document:
         self.db.add(document)
+        await self.db.flush()
+        await self.db.refresh(document)
         return document
     
     async def get_by_id(self, doc_id: UUID) -> Document:
