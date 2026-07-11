@@ -11,6 +11,7 @@ from app.models.document_chunk import DocumentChunk
 
 from app.ingestion.parsers.pdf_parser import PDFParser
 from app.ingestion.chunking.text_chunker import TextChunker
+from app.embeddings.service import EmbeddingService
 
 
 class JobService:
@@ -50,6 +51,8 @@ class JobService:
                 chunks = chunker.split(text)
                 chunk_models = []
 
+                
+
 
                 for index, chunk in enumerate(chunks):
                     chunk_models.append(
@@ -60,7 +63,14 @@ class JobService:
                         )
                     )
 
-                print(f"Chunks created: {len(chunk_models)}")
+                embedding_service = EmbeddingService()
+
+                vectors = await embedding_service.embed(
+                    [chunk.content for chunk in chunk_models]
+                )
+
+                print(len(vectors))
+                print(len(vectors[0]))
 
                 await self.chunk_repo.create_many(chunk_models)
                 await self.db.commit()

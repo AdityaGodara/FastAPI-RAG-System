@@ -3,6 +3,7 @@ import uuid
 from sqlalchemy import ForeignKey, Integer, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from pgvector.sqlalchemy import Vector
 
 from app.db.base_class import Base
 
@@ -24,6 +25,11 @@ class DocumentChunk(Base):
     chunk_index: Mapped[int] = mapped_column(Integer)
 
     content: Mapped[str] = mapped_column(Text)
+
+    embedding: Mapped[list[float] | None] = mapped_column(
+        Vector(384),
+        nullable=True,
+    )
 
     document = relationship(
         "Document",

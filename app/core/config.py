@@ -19,4 +19,6 @@ class Settings(BaseSettings):
     minio_bucket: str
     minio_secure: bool
 
+    openai_api_key: str
+
 settings = Settings()
