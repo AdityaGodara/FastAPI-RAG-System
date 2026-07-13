@@ -22,4 +22,3 @@ async def lifespan(app: FastAPI):
 
 app.include_router(auth_router)
 app.include_router(document_router)
-

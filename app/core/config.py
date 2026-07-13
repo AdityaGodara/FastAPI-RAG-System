@@ -22,3 +22,9 @@ class Settings(BaseSettings):
     openai_api_key: str
 
 settings = Settings()
+
+from app.core.config import settings
+
+# print("=" * 60)
+# print(settings.database_url)
+# print("=" * 60)

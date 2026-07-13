@@ -6,7 +6,7 @@ from app.documents.repository import DocumentRepository
 from app.jobs.repository import IngestionJobRepository
 from app.repository.chunk_repository import ChunkRepository
 from app.storage.service import StorageService
-from app.models.enums import JobStatus, MediaType
+from app.models.enums import JobStatus, MediaType, DocumentStatus
 from app.models.document_chunk import DocumentChunk
 
 from app.ingestion.parsers.pdf_parser import PDFParser
@@ -69,8 +69,12 @@ class JobService:
                     [chunk.content for chunk in chunk_models]
                 )
 
-                print(len(vectors))
-                print(len(vectors[0]))
+                for chunk, vector in zip(chunk_models, vectors):
+                    chunk.embedding = vector
+
+                document.status = DocumentStatus.INDEXED
+                job.status = JobStatus.COMPLETED
+                job.progress = 100
 
                 await self.chunk_repo.create_many(chunk_models)
                 await self.db.commit()
@@ -88,6 +92,15 @@ class JobService:
             print(f"Size       : {len(file_bytes)} bytes")
             print("=" * 60)
 
+        except Exception as e:
+            job.status = JobStatus.FAILED
+            job.error_message = str(e)
+
+            document.status = DocumentStatus.FAILED
+
+            await self.db.commit()
+
+            raise
         finally:
             response.close()
             response.release_conn()
