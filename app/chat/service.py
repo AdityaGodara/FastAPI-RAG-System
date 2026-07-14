@@ -16,7 +16,7 @@ class ChatService:
         self.llm = LLMService()
 
 
-    async def retrieve(
+    async def chat(
         self,
         document_id: UUID,
         question: str,

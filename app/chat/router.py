@@ -13,11 +13,17 @@ router = APIRouter(
     tags=["Chat"]
 )
 
-@router.post("/test")
-async def chat_test(chat: ChatRequest, current_user: User = Depends(get_db), db: AsyncSession = Depends(get_db)):
+@router.post("/", response_model=ChatResponse)
+async def chat_test(chat: ChatRequest, 
+                    user: User = Depends(get_current_user), 
+                    db: AsyncSession = Depends(get_db)):
     service = ChatService(db)
 
-    return await service.retrieve(
+    answer = await service.chat(
         document_id=chat.document_id,
         question=chat.question
+    )
+
+    return ChatResponse(
+        answer=answer
     )
