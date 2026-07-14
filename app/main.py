@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from app.auth.router import router as auth_router
 from app.documents.router import router as document_router
+from app.chat.router import router as chat_router
 
 from contextlib import asynccontextmanager
 
@@ -22,3 +23,4 @@ async def lifespan(app: FastAPI):
 
 app.include_router(auth_router)
 app.include_router(document_router)
+app.include_router(chat_router)
