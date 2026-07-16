@@ -49,3 +49,16 @@ async def get_msgs(
         conversation_id=conversation_id,
         user_id=user.id
     )
+
+@router.delete("/{conversation_id}")
+async def delete_conversation(
+    conversation_id: UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    service = ConversationService(db)
+
+    return await service.delete_conversation(
+        conversation_id=conversation_id,
+        user_id=user.id,
+    )

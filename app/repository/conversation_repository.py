@@ -76,3 +76,10 @@ class ConversationRepository:
         await self.db.commit()
         await self.db.refresh(conversation)
         return conversation
+    
+    async def delete_conversation(
+        self,
+        conversation: Conversation,
+    ):
+        await self.db.delete(conversation)
+        await self.db.commit()

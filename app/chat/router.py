@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
@@ -27,3 +28,24 @@ async def chat_test(chat: ChatRequest,
     )
 
     return answer
+
+@router.post("/stream")
+async def stream_chat(
+    chat: ChatRequest,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+
+    service = ChatService(db)
+
+    generator = service.stream_chat(
+        conversation_id=chat.conversation_id,
+        document_id=chat.document_id,
+        question=chat.question,
+        user_id=user.id,
+    )
+
+    return StreamingResponse(
+        generator,
+        media_type="text/event-stream",
+    )

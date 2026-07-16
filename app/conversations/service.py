@@ -112,3 +112,29 @@ class ConversationService:
             conversation=conversation,
             title=title
         )
+
+    async def delete_conversation(
+            self,
+            conversation_id: UUID,
+            user_id: UUID
+    ):
+        
+        conversation = await self.repo.get_by_id(conversation_id=conversation_id)
+
+        if conversation is None:
+            raise HTTPException(
+                status_code=404,
+                detail="No conversation found"
+            )
+        
+        if conversation.user_id != user_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Forbidden",
+            )
+        
+        await self.repo.delete_conversation(conversation)
+
+        return {
+            "message" : "Conversation deleted successfully"
+        }

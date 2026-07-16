@@ -37,17 +37,44 @@ class GroqProvider(BaseLLM):
         )
         response = await self.client.chat.completions.create(
             model=self.model,
-            messages=[
-                {
-                    "role": "system",
-                    "content": system_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": user_prompt,
-                },
-            ],
+            messages=messages,
             temperature=0,
         )
 
         return response.choices[0].message.content
+
+    async def stream(
+    self,
+    system_prompt: str,
+    history: list,
+    user_prompt: str,
+    ):
+        messages = [
+            {
+                "role": "system",
+                "content": system_prompt,
+            }
+        ]
+
+        messages.extend(history)
+
+        messages.append(
+            {
+                "role": "user",
+                "content": user_prompt,
+            }
+        )
+
+        stream = await self.client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            temperature=0,
+            stream=True,
+        )
+
+        async for chunk in stream:
+            delta = chunk.choices[0].delta.content
+
+            if delta:
+                yield delta
+        

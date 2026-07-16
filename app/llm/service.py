@@ -34,3 +34,16 @@ class LLMService:
             history=[],
             user_prompt=""
         )
+    
+    async def stream(
+    self,
+    system_prompt: str,
+    history: list,
+    user_prompt: str,
+    ):
+        async for token in self.provider.stream(
+            system_prompt=system_prompt,
+            history=history,
+            user_prompt=user_prompt,
+        ):
+            yield token
