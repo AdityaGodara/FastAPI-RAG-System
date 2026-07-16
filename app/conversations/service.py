@@ -85,3 +85,28 @@ class ConversationService:
             )
             for message in messages
         ]
+
+    async def generate_title(
+        self,
+        conversation_id: UUID,
+        question:str,
+        answer:str
+    ):
+        conversation = await self.repo.get_by_id(
+            conversation_id
+        )
+        if conversation is None:
+            return
+        
+        if conversation.title != "New Chat":
+            return
+        
+        title = await self.llm.generate_title(
+            question,
+            answer
+        )
+
+        await self.repo.update_title(
+            conversation=conversation,
+            title=title
+        )

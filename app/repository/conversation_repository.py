@@ -65,3 +65,14 @@ class ConversationRepository:
 
         await self.db.delete(conversation)
         await self.db.commit()
+
+    async def update_title(
+            self,
+            conversation: Conversation,
+            title: str
+    ) -> Conversation:
+        conversation.title = title
+
+        await self.db.commit()
+        await self.db.refresh(conversation)
+        return conversation

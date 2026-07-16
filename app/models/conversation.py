@@ -1,7 +1,7 @@
 from uuid import uuid4
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, String, DateTime, func
+from sqlalchemy import ForeignKey, String, DateTime, func, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -37,6 +37,10 @@ class Conversation(Base):
         DateTime(timezone=True),
         server_default=func.now(),
         onupdate=func.now(),
+    )
+
+    title_generated: Mapped[bool] = mapped_column(
+        server_default=text("false")
     )
 
     messages = relationship(

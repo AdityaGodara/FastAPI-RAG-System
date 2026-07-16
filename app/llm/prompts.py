@@ -10,3 +10,24 @@ If the answer is not present in the context, respond exactly:
 Context:
 {context}
 """
+
+
+TITLE_PROMPT = """
+Generate a concise title for this conversation.
+
+Rules:
+
+- Maximum 5 words
+- No quotation marks
+- No punctuation at the end
+- Be descriptive
+- Return ONLY the title
+
+Conversation:
+
+User:
+{question}
+
+Assistant:
+{answer}
+"""

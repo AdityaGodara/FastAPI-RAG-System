@@ -11,6 +11,7 @@ from app.llm.service import LLMService
 from app.models.enums import MessageRole
 from app.models.message import Message
 from app.retrieval.service import RetrievalService
+from app.tasks.conversation import generate_conversation_title
 
 
 class ChatService:
@@ -109,6 +110,11 @@ class ChatService:
                 content=answer,
             )
         )
+
+        if not conversation.title_generated:
+            generate_conversation_title.delay(
+                str(conversation_id)
+            )
 
         # -----------------------------
         # Response
