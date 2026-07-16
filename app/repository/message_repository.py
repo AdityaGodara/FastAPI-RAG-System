@@ -33,7 +33,7 @@ class MessageRepository:
     async def get_by_conversation(
         self,
         conversation_id: UUID,
-        limit: int
+        limit: int | None = None
     ) -> list[Message]:
 
         result = await self.db.execute(
