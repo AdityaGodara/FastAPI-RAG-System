@@ -17,8 +17,24 @@ class GroqProvider(BaseLLM):
         self,
         system_prompt: str,
         user_prompt: str,
+        history: list
     ) -> str:
 
+        messages = [
+            {
+                "role": "system",
+                "content": system_prompt,
+            }
+        ]
+
+        messages.extend(history)
+
+        messages.append(
+            {
+                "role": "user",
+                "content": user_prompt,
+            }
+        )
         response = await self.client.chat.completions.create(
             model=self.model,
             messages=[

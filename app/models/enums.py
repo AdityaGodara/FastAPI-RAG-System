@@ -19,3 +19,7 @@ class JobStatus(str, Enum):
     PROCESSING = "processing"
     COMPLETED = "completed"
     FAILED = "failed"
+
+class MessageRole(str, Enum):
+    USER = "USER"
+    ASSISTANT = "ASSISTANT"

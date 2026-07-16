@@ -1,32 +1,86 @@
+from uuid import UUID
+
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.repository.chat_repository import RetrievalRepository
-from app.embeddings.service import EmbeddingService
-
-from app.llm.service import LLMService
+from app.schemas.chat import ChatResponse, SourceChunk
+from app.repository.conversation_repository import ConversationRepository
+from app.repository.message_repository import MessageRepository
 from app.llm.prompts import SYSTEM_PROMPT
+from app.llm.service import LLMService
+from app.models.enums import MessageRole
+from app.models.message import Message
+from app.retrieval.service import RetrievalService
 
-from uuid import UUID
 
 class ChatService:
 
     def __init__(self, db: AsyncSession):
-        self.repo = RetrievalRepository(db)
-        self.embedding_service = EmbeddingService()
+        self.conversation_repo = ConversationRepository(db)
+        self.message_repo = MessageRepository(db)
+        self.retrieval_service = RetrievalService(db)
         self.llm = LLMService()
-
 
     async def chat(
         self,
+        conversation_id: UUID,
         document_id: UUID,
         question: str,
+        user_id: UUID,
     ):
-        query_embedding = await self.embedding_service.embed(question)
 
-        chunks = await self.repo.similarity_search(
+        # -----------------------------
+        # Validate Conversation
+        # -----------------------------
+        conversation = await self.conversation_repo.get_by_id(
+            conversation_id
+        )
+
+        if conversation is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Conversation not found",
+            )
+
+        if conversation.user_id != user_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Forbidden",
+            )
+
+        # -----------------------------
+        # Save User Message
+        # -----------------------------
+        await self.message_repo.create(
+            Message(
+                conversation_id=conversation_id,
+                role=MessageRole.USER,
+                content=question,
+            )
+        )
+
+        # -----------------------------
+        # Conversation History
+        # -----------------------------
+        messages = await self.message_repo.get_recent_messages(
+            conversation_id=conversation_id,
+            limit=10,
+        )
+
+        history = [
+            {
+                "role": message.role.value.lower(),
+                "content": message.content,
+            }
+            for message in messages
+        ]
+
+        # -----------------------------
+        # Retrieval
+        # -----------------------------
+        chunks = await self.retrieval_service.retrieve(
             document_id=document_id,
-            query_embedding=query_embedding,
-            limit=5,
+            question=question,
         )
 
         context = "\n\n".join(
@@ -34,10 +88,39 @@ class ChatService:
             for chunk in chunks
         )
 
-        system_prompt = SYSTEM_PROMPT.format(context=context)
+        # -----------------------------
+        # LLM
+        # -----------------------------
         answer = await self.llm.generate(
-            system_prompt=system_prompt,
+            system_prompt=SYSTEM_PROMPT.format(
+                context=context,
+            ),
+            history=history,
             user_prompt=question,
         )
 
-        return answer
+        # -----------------------------
+        # Save Assistant Message
+        # -----------------------------
+        await self.message_repo.create(
+            Message(
+                conversation_id=conversation_id,
+                role=MessageRole.ASSISTANT,
+                content=answer,
+            )
+        )
+
+        # -----------------------------
+        # Response
+        # -----------------------------
+        return ChatResponse(
+            answer=answer,
+            sources=[
+                SourceChunk(
+                    chunk_id=chunk.id,
+                    chunk_index=chunk.chunk_index,
+                    content=chunk.content,
+                )
+                for chunk in chunks
+            ],
+        )

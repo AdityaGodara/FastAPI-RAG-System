@@ -13,7 +13,7 @@ router = APIRouter(
     tags=["Chat"]
 )
 
-@router.post("/", response_model=ChatResponse)
+@router.post("/ask", response_model=ChatResponse)
 async def chat_test(chat: ChatRequest, 
                     user: User = Depends(get_current_user), 
                     db: AsyncSession = Depends(get_db)):
@@ -24,6 +24,4 @@ async def chat_test(chat: ChatRequest,
         question=chat.question
     )
 
-    return ChatResponse(
-        answer=answer
-    )
+    return answer

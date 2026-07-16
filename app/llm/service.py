@@ -10,9 +10,11 @@ class LLMService:
         self,
         system_prompt: str,
         user_prompt: str,
+        history: list
     ) -> str:
 
         return await self.provider.generate(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
+            history=history
         )
