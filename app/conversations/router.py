@@ -11,11 +11,11 @@ from app.conversations.service import ConversationService
 from uuid import UUID
 
 router = APIRouter(
-    prefix="/conversation",
+    prefix="/conversations",
     tags=["Conversation"]
 )
 
-@router.post("", response_model=ConversationCreateResponse)
+@router.post("/", response_model=ConversationCreateResponse)
 async def create_conv(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user)
@@ -26,7 +26,7 @@ async def create_conv(
         user_id=user.id
     )
 
-@router.get("", response_model=ConversationResponse)
+@router.get("/", response_model=list[ConversationResponse])
 async def get_conv(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user)

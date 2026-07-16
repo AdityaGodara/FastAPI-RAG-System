@@ -113,7 +113,9 @@ class ChatService:
 
         if not conversation.title_generated:
             generate_conversation_title.delay(
-                str(conversation_id)
+                conversation_id,
+                question,
+                answer
             )
 
         # -----------------------------

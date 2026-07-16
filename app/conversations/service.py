@@ -11,6 +11,7 @@ from app.schemas.conversation import (
 )
 from app.models.conversation import Conversation
 from app.schemas.message import MessageResponse
+from app.llm.service import LLMService
 
 
 class ConversationService:
@@ -18,6 +19,7 @@ class ConversationService:
     def __init__(self, db: AsyncSession):
         self.repo = ConversationRepository(db)
         self.msg_repo = MessageRepository(db)
+        self.llm = LLMService()
 
     async def create(
         self,
