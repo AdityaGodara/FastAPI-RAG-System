@@ -1,6 +1,7 @@
 from uuid import uuid4
+from datetime import datetime
 
-from sqlalchemy import ForeignKey, Text, Enum
+from sqlalchemy import ForeignKey, Text, Enum, DateTime, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -36,4 +37,9 @@ class Message(Base):
     conversation = relationship(
         "Conversation",
         back_populates="messages",
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
     )

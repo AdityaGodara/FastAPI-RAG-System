@@ -33,12 +33,14 @@ class MessageRepository:
     async def get_by_conversation(
         self,
         conversation_id: UUID,
+        limit: int
     ) -> list[Message]:
 
         result = await self.db.execute(
             select(Message)
             .where(Message.conversation_id == conversation_id)
             .order_by(Message.created_at.asc())
+            .limit(limit)
         )
 
         return list(result.scalars().all())

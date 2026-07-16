@@ -21,7 +21,9 @@ async def chat_test(chat: ChatRequest,
 
     answer = await service.chat(
         document_id=chat.document_id,
-        question=chat.question
+        question=chat.question,
+        conversation_id=chat.conversation_id,
+        user_id=user.id
     )
 
     return answer

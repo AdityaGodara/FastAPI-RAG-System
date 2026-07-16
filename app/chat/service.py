@@ -62,7 +62,7 @@ class ChatService:
         # -----------------------------
         # Conversation History
         # -----------------------------
-        messages = await self.message_repo.get_recent_messages(
+        messages = await self.message_repo.get_by_conversation(
             conversation_id=conversation_id,
             limit=10,
         )
