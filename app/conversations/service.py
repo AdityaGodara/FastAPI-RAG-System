@@ -138,3 +138,23 @@ class ConversationService:
         return {
             "message" : "Conversation deleted successfully"
         }
+
+    async def rename_conversation(
+            self,
+            conversation_id: UUID,
+            title: str,
+            user_id: UUID
+    ):
+        conversation = await self.repo.get_by_id(conversation_id)
+        if conversation is None:
+            raise HTTPException(status_code=404, detail="No conversation found")
+        if conversation.user_id != user_id:
+            raise HTTPException(status_code=403, detail="Forbidden")
+
+        conversation = await self.repo.update_title(conversation, title)
+        return ConversationResponse(
+            id=conversation.id,
+            title=conversation.title,
+            created_at=conversation.created_at,
+            updated_at=conversation.updated_at,
+        )

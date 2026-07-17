@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.auth.router import router as auth_router
 from app.documents.router import router as document_router
@@ -9,11 +10,21 @@ from app.websockets.router import router as websocket_router
 from contextlib import asynccontextmanager
 
 from app.storage.service import StorageService
+from app.core.config import settings
 
 app = FastAPI(
     title="FastAPI RAG",
     description="A FastAPI application with RAG (Retrieval-Augmented Generation) capabilities.",
     version="1.0.0",
+)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @asynccontextmanager

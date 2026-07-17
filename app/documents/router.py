@@ -39,3 +39,14 @@ async def get_all_documents(
     result = await service.list_documents(user.id)
 
     return result
+
+@router.delete("/{document_id}")
+async def delete_document(
+    document_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    from uuid import UUID
+    service = DocumentService(db)
+    await service.delete_document(UUID(document_id), user.id)
+    return {"message": "Document deleted"}

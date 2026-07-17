@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
@@ -20,6 +21,12 @@ class Settings(BaseSettings):
     minio_secure: bool
 
     groq_api_key: str
+
+    cors_origins: list[str] = Field(
+        default=[
+            "http://localhost:3000",
+        ]
+    )
 
 settings = Settings()
 

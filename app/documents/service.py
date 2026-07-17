@@ -114,3 +114,11 @@ class DocumentService:
             )
 
         return responses
+
+    async def delete_document(self, document_id: UUID, user_id: UUID):
+        document = await self.repository.get_by_id(document_id)
+        if not document or document.user_id != user_id:
+            raise HTTPException(status_code=404, detail="Document not found")
+        
+        self.storage.delete_file(document.object_key)
+        await self.repository.delete_doc(document)
