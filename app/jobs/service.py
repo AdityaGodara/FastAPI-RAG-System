@@ -13,6 +13,8 @@ from app.ingestion.parsers.pdf_parser import PDFParser
 from app.ingestion.chunking.text_chunker import TextChunker
 from app.embeddings.service import EmbeddingService
 
+from app.jobs.publisher import publisher
+
 
 class JobService:
     def __init__(self, db: AsyncSession):
@@ -25,6 +27,12 @@ class JobService:
     async def process(self, job_id: str):
         job = await self.job_repo.get_by_id(job_id)
 
+        await publisher.publish(
+            job_id=str(job.id),
+            status="RUNNING",
+            progress=5,
+        )
+
         if job is None:
             raise ValueError(f"Job {job_id} not found")
 
@@ -35,6 +43,12 @@ class JobService:
 
         response = self.storage.download_file(document.object_key)
 
+        await publisher.publish(
+            job_id=str(job.id),
+            status="DOWNLOADED",
+            progress=20,
+        )
+
         try:
             file_bytes = response.read()
 
@@ -42,6 +56,12 @@ class JobService:
                 parser = PDFParser()
 
                 text = parser.extract_text(file_bytes)
+
+                await publisher.publish(
+                    job_id=str(job.id),
+                    status="PARSING_COMPLETE",
+                    progress=40,
+                )
 
                 # print("=" * 60)
                 # print(text[:1000])
@@ -51,9 +71,6 @@ class JobService:
                 chunks = chunker.split(text)
                 chunk_models = []
 
-                
-
-
                 for index, chunk in enumerate(chunks):
                     chunk_models.append(
                         DocumentChunk(
@@ -62,6 +79,12 @@ class JobService:
                             content=chunk,
                         )
                     )
+
+                await publisher.publish(
+                    job_id=str(job.id),
+                    status="CHUNKING_COMPLETE",
+                    progress=60,
+                )
 
                 embedding_service = EmbeddingService()
 
@@ -75,6 +98,12 @@ class JobService:
                 document.status = DocumentStatus.INDEXED
                 job.status = JobStatus.COMPLETED
                 job.progress = 100
+
+                await publisher.publish(
+                    job_id=str(job.id),
+                    status="COMPLETED",
+                    progress=100,
+                )
 
                 await self.chunk_repo.create_many(chunk_models)
                 await self.db.commit()
@@ -97,6 +126,11 @@ class JobService:
             job.error_message = str(e)
 
             document.status = DocumentStatus.FAILED
+            await publisher.publish(
+                job_id=str(job.id),
+                status="FAILED",
+                error=str(e),
+            )
 
             await self.db.commit()
 
