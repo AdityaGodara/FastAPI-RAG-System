@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.documents.repository import DocumentRepository
 from app.jobs.repository import IngestionJobRepository
-from app.documents.schemas import DocumentResponse
+from app.documents.schemas import DocumentResponse, DocFetchResponse
 from app.models.document import Document
 from app.models.injestion_job import IngestionJob
 from app.models.enums import DocumentStatus, MediaType, JobStatus
@@ -91,3 +91,26 @@ class DocumentService:
         except Exception:
             self.storage.delete_file(object_key)
             raise
+
+
+    async def list_documents(
+            self,
+            user_id: UUID
+    ):
+        documents = await self.repository.get_by_user(user_id=user_id)
+
+        responses = []
+
+        for doc in documents:
+            responses.append(
+                DocFetchResponse(
+                    id=doc.id,
+                    filename=doc.original_filename,
+                    media_type=doc.media_type,
+                    size=doc.file_size,
+                    status=doc.status.value,
+                    created_at=doc.created_at
+                )
+            )
+
+        return responses

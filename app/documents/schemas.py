@@ -17,3 +17,15 @@ class DocumentResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+class DocFetchResponse(BaseModel):
+    id: UUID
+    filename: str
+    media_type: str
+    size: int
+    status: str
+    created_at: datetime
+
+    model_config = {
+        "from_attributes":True,
+    }
