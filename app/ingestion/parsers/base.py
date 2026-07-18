@@ -4,5 +4,9 @@ from abc import ABC, abstractmethod
 class BaseParser(ABC):
 
     @abstractmethod
-    def extract_text(self, file_bytes: bytes) -> str:
+    async def parse(
+        self,
+        file_bytes: bytes,
+        mime_type: str,
+    ) -> str:
         pass

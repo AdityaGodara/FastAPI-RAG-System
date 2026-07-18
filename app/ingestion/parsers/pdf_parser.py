@@ -5,7 +5,7 @@ from app.ingestion.parsers.base import BaseParser
 
 class PDFParser(BaseParser):
 
-    def extract_text(self, file_bytes: bytes) -> str:
+    def parse(self, file_bytes: bytes, media_type: str) -> str:
         document = fitz.open(stream=file_bytes, filetype="pdf")
 
         pages = []

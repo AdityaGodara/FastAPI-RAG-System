@@ -9,7 +9,7 @@ from app.storage.service import StorageService
 from app.models.enums import JobStatus, MediaType, DocumentStatus
 from app.models.document_chunk import DocumentChunk
 
-from app.ingestion.parsers.pdf_parser import PDFParser
+from app.ingestion.parser_factory import ParserFactory
 from app.ingestion.chunking.text_chunker import TextChunker
 from app.embeddings.service import EmbeddingService
 
@@ -52,74 +52,76 @@ class JobService:
         try:
             file_bytes = response.read()
 
-            if document.media_type == MediaType.PDF:
-                parser = PDFParser()
+            parser = ParserFactory.get(document)
 
-                text = parser.extract_text(file_bytes)
+            text = await parser.parse(
+                file_bytes=file_bytes,
+                media_type=document.media_type,
+            )
 
-                await publisher.publish(
-                    job_id=str(job.id),
-                    status="PARSING_COMPLETE",
-                    progress=40,
-                )
+            await publisher.publish(
+                job_id=str(job.id),
+                status="PARSING_COMPLETE",
+                progress=40,
+            )
 
-                # print("=" * 60)
-                # print(text[:1000])
-                # print("=" * 60)
-                chunker = TextChunker()
+            # print("=" * 60)
+            # print(text[:1000])
+            # print("=" * 60)
+            chunker = TextChunker()
 
-                chunks = chunker.split(text)
-                chunk_models = []
+            chunks = chunker.split(text)
+            chunk_models = []
 
-                for index, chunk in enumerate(chunks):
-                    chunk_models.append(
-                        DocumentChunk(
-                            document_id=document.id,
-                            chunk_index=index,
-                            content=chunk,
-                        )
+            for index, chunk in enumerate(chunks):
+                chunk_models.append(
+                    DocumentChunk(
+                        document_id=document.id,
+                        chunk_index=index,
+                        content=chunk,
                     )
-
-                await publisher.publish(
-                    job_id=str(job.id),
-                    status="CHUNKING_COMPLETE",
-                    progress=60,
                 )
 
-                embedding_service = EmbeddingService()
+            await publisher.publish(
+                job_id=str(job.id),
+                status="CHUNKING_COMPLETE",
+                progress=60,
+            )
 
-                vectors = await embedding_service.embed(
-                    [chunk.content for chunk in chunk_models]
-                )
+            embedding_service = EmbeddingService()
 
-                for chunk, vector in zip(chunk_models, vectors):
-                    chunk.embedding = vector
+            vectors = await embedding_service.embed(
+                [chunk.content for chunk in chunk_models]
+            )
 
-                document.status = DocumentStatus.INDEXED
-                job.status = JobStatus.COMPLETED
-                job.progress = 100
+            for chunk, vector in zip(chunk_models, vectors):
+                chunk.embedding = vector
 
-                await publisher.publish(
-                    job_id=str(job.id),
-                    status="COMPLETED",
-                    progress=100,
-                )
+            document.status = DocumentStatus.INDEXED
+            job.status = JobStatus.COMPLETED
+            job.progress = 100
 
-                await self.chunk_repo.create_many(chunk_models)
-                await self.db.commit()
+            await publisher.publish(
+                job_id=str(job.id),
+                status="COMPLETED",
+                progress=100,
+            )
 
-                # print(f"Total chunks: {len(chunks)}")
+            await self.chunk_repo.create_many(chunk_models)
+            await self.db.commit()
 
-                # for i, chunk in enumerate(chunks[:3]):
-                #     print("=" * 50)
-                #     print(f"Chunk {i+1}")
-                #     print(chunk)
+            # print(f"Total chunks: {len(chunks)}")
 
-            print("=" * 60)
-            print(f"Filename   : {document.original_filename}")
-            print(f"Media Type : {document.media_type}")
-            print(f"Size       : {len(file_bytes)} bytes")
-            print("=" * 60)
+            # for i, chunk in enumerate(chunks[:3]):
+            #     print("=" * 50)
+            #     print(f"Chunk {i+1}")
+            #     print(chunk)
+
+            # print("=" * 60)
+            # print(f"Filename   : {document.original_filename}")
+            # print(f"Media Type : {document.media_type}")
+            # print(f"Size       : {len(file_bytes)} bytes")
+            # print("=" * 60)
 
         except Exception as e:
             job.status = JobStatus.FAILED
