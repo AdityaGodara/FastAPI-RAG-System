@@ -39,11 +39,16 @@ export const useChatStream = (conversationId: string | null) => {
           headers: { Authorization: `Bearer ${token}` }
         });
         const docs = await docsResponse.json();
-        const completedDocs = docs.filter((d: any) => d.status === 'completed');
+        const completedDocs = docs.filter((d: any) => d.status === 'indexed');
         const documentId = completedDocs.length > 0 ? completedDocs[0].id : null;
 
-        if (!documentId) {
-          throw new Error('No completed documents found to chat with.');
+        const requestBody: any = { 
+          content: content,
+          question: content,
+          conversation_id: conversationId,
+        };
+        if (documentId) {
+          requestBody.document_id = documentId;
         }
 
         const response = await fetch(`${API_URL}/chat/stream`, {
@@ -52,12 +57,7 @@ export const useChatStream = (conversationId: string | null) => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ 
-            content: content,
-            question: content,
-            conversation_id: conversationId,
-            document_id: documentId
-          }),
+          body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
@@ -72,30 +72,37 @@ export const useChatStream = (conversationId: string | null) => {
         let assistantContent = '';
         let sources: Source[] = [];
 
+        let buffer = '';
+        let currentEvent = '';
+
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split('\n');
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          // Keep the last incomplete line in the buffer
+          buffer = lines.pop() || '';
 
           for (const line of lines) {
-            if (line.startsWith('data: ')) {
+            if (line.startsWith('event: ')) {
+              currentEvent = line.slice(7).trim();
+            } else if (line.startsWith('data: ')) {
               const data = line.slice(6);
-              if (data === '[DONE]') {
+              if (currentEvent === 'done' || data === '[DONE]') {
                 break;
               }
               try {
                 const parsed = JSON.parse(data);
-                if (parsed.type === 'token') {
-                  assistantContent += parsed.content;
+                if (currentEvent === 'token' && parsed.text !== undefined) {
+                  assistantContent += parsed.text;
                   setStreamingMessage(assistantContent);
-                } else if (parsed.type === 'sources') {
+                } else if (currentEvent === 'sources' && parsed.sources) {
                   sources = parsed.sources;
                   setStreamingSources(sources);
                 }
               } catch (e) {
-                // Ignore parse errors for partial chunks
+                // Ignore parse errors
               }
             }
           }

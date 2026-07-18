@@ -3,9 +3,11 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
+from typing import Optional
+
 class ChatRequest(BaseModel):
     conversation_id: UUID
-    document_id: UUID
+    document_id: Optional[UUID] = None
     question: str
 
 class SourceChunk(BaseModel):

@@ -50,3 +50,11 @@ async def refresh(data: RefreshRequest, db: AsyncSession = Depends(get_db)):
     auth_service = AuthService(db)
 
     return await auth_service.refresh(data)
+
+
+from app.auth.dependencies import get_current_user
+from app.models.user import User
+
+@router.get("/me", response_model=UserResponse)
+async def get_me(user: User = Depends(get_current_user)):
+    return user

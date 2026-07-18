@@ -11,7 +11,7 @@ import { Message } from "../api";
 import { SourceCitation } from "./source-citation";
 
 export function ChatMessage({ message }: { message: Message | { role: 'assistant', content: string, sources?: any[] } }) {
-  const isUser = message.role === "user";
+  const isUser = message.role.toLowerCase() === "user";
 
   return (
     <div className={`flex w-full py-6 ${isUser ? "justify-end" : "justify-start"}`}>

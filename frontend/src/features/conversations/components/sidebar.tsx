@@ -136,11 +136,11 @@ export function Sidebar() {
       <div className="mt-auto border-t border-sidebar-border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 truncate">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary font-medium">
-              {user?.email?.charAt(0).toUpperCase() || 'U'}
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary font-medium uppercase">
+              {user?.username?.charAt(0) || user?.email?.charAt(0) || 'U'}
             </div>
             <div className="flex flex-col truncate">
-              <span className="truncate text-sm font-medium">{user?.name || 'User'}</span>
+              <span className="truncate text-sm font-medium">{user?.username || 'User'}</span>
               <span className="truncate text-xs text-muted-foreground">{user?.email}</span>
             </div>
           </div>

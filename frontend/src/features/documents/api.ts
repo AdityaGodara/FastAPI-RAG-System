@@ -4,9 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 export interface Document {
   id: string;
   filename: string;
-  status: 'processing' | 'completed' | 'failed';
-  uploaded_at: string;
-  size_bytes: number;
+  status: 'uploaded' | 'processing' | 'indexed' | 'failed';
+  created_at: string;
+  size: number;
 }
 
 export const useDocuments = () => {

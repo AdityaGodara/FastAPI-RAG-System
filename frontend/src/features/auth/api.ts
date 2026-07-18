@@ -21,7 +21,7 @@ export const useLoginMutation = () => {
       setTokens(data.access_token, data.refresh_token);
       // Fetch user profile after login
       try {
-        const userRes = await api.get('/users/me');
+        const userRes = await api.get('/auth/me');
         setUser(userRes.data);
       } catch (err) {
         console.error("Failed to fetch user profile", err);

@@ -49,10 +49,10 @@ export function DocumentList() {
                   Processing
                 </Badge>
               )}
-              {doc.status === 'completed' && (
+              {doc.status === 'indexed' && (
                 <Badge variant="secondary" className="bg-success/10 text-success border-success/20 gap-1.5">
                   <CheckCircle2 className="h-3 w-3" />
-                  Ready
+                  Indexed
                 </Badge>
               )}
               {doc.status === 'failed' && (
@@ -63,7 +63,7 @@ export function DocumentList() {
               )}
             </div>
             <div className="text-sm text-muted-foreground">
-              {new Date(doc.uploaded_at).toLocaleDateString()}
+              {new Date(doc.created_at).toLocaleDateString()}
             </div>
             <div className="text-right">
               <Button

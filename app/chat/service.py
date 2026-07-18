@@ -81,15 +81,19 @@ class ChatService:
         # -----------------------------
         # Retrieval
         # -----------------------------
-        chunks = await self.retrieval_service.retrieve(
-            document_id=document_id,
-            question=question,
-        )
+        if document_id:
+            chunks = await self.retrieval_service.retrieve(
+                document_id=document_id,
+                question=question,
+            )
 
-        context = "\n\n".join(
-            chunk.content
-            for chunk in chunks
-        )
+            context = "\n\n".join(
+                chunk.content
+                for chunk in chunks
+            )
+        else:
+            chunks = []
+            context = ""
 
         # -----------------------------
         # LLM
@@ -192,15 +196,19 @@ class ChatService:
         # -----------------------------
         # Retrieval
         # -----------------------------
-        chunks = await self.retrieval_service.retrieve(
-            document_id=document_id,
-            question=question,
-        )
+        if document_id:
+            chunks = await self.retrieval_service.retrieve(
+                document_id=document_id,
+                question=question,
+            )
 
-        context = "\n\n".join(
-            chunk.content
-            for chunk in chunks
-        )
+            context = "\n\n".join(
+                chunk.content
+                for chunk in chunks
+            )
+        else:
+            chunks = []
+            context = ""
 
         answer = ""
 
