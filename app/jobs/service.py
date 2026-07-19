@@ -56,7 +56,7 @@ class JobService:
 
             text = await parser.parse(
                 file_bytes=file_bytes,
-                media_type=document.media_type,
+                media_type=document.content_type,
             )
 
             await publisher.publish(

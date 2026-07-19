@@ -22,11 +22,11 @@ class ParserFactory:
     @staticmethod
     def get(document: Document):
 
-        parser = ParserFactory.PARSERS.get(document.media_type)
+        parser = ParserFactory.PARSERS.get(document.content_type)
 
         if parser is None:
             raise ValueError(
-                f"Unsupported mime type: {document.media_type}"
+                f"Unsupported mime type: {document.content_type}"
             )
 
         return parser()

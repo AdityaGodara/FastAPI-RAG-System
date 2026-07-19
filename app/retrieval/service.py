@@ -12,14 +12,14 @@ class RetrievalService:
 
     async def retrieve(
         self,
-        document_id: UUID,
+        user_id: UUID,
         question: str,
         limit: int = 5,
     ):
         query_embedding = await self.embedding.embed(question)
 
         chunks = await self.repository.similarity_search(
-            document_id=document_id,
+            user_id=user_id,
             query_embedding=query_embedding,
             limit=limit,
         )

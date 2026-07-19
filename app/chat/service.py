@@ -83,7 +83,7 @@ class ChatService:
         # -----------------------------
         if document_id:
             chunks = await self.retrieval_service.retrieve(
-                document_id=document_id,
+                user_id=user_id,
                 question=question,
             )
 
@@ -198,7 +198,7 @@ class ChatService:
         # -----------------------------
         if document_id:
             chunks = await self.retrieval_service.retrieve(
-                document_id=document_id,
+                user_id=user_id,
                 question=question,
             )
 
