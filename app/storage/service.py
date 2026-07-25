@@ -13,6 +13,7 @@ from app.storage.client import minio_client
 class StorageService:
     def __init__(self):
         self.client = minio_client
+        self.ensure_bucket_exists()
 
     def ensure_bucket_exists(self) -> None:
         try:
